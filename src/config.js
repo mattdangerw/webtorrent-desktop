@@ -1,5 +1,4 @@
 const appConfig = require('application-config')('WebTorrent')
-const fs = require('fs')
 const path = require('path')
 const electron = require('electron')
 
@@ -139,10 +138,14 @@ function isTest () {
 function isPortable () {
   if (IS_TEST) {
     return true
-  }
-  try {
-    return process.platform === 'win32' && IS_PRODUCTION && !!fs.statSync(PORTABLE_PATH)
-  } catch (err) {
+  } else if (process.platform === 'win32' && IS_PRODUCTION) {
+    const fs = require('fs')
+    try {
+      return !!fs.statSync(PORTABLE_PATH)
+    } catch (err) {
+      return false
+    }
+  } else {
     return false
   }
 }
@@ -174,6 +177,8 @@ function isProduction () {
 function is64BitOperatingSystem () {
   // This is a 64-bit binary, so the OS clearly supports 64-bit apps
   if (process.arch === 'x64') return true
+
+  const fs = require('fs')
 
   let useEnv = false
   try {
