@@ -8,7 +8,6 @@ Encoding=UTF-8
 Type=Application
 Icon=webtorrent-desktop
 Terminal=false
-Path=/opt/webtorrent-desktop
 Exec=webtorrent-desktop %U
 TryExec=webtorrent-desktop
 StartupNotify=false
@@ -20,14 +19,11 @@ Actions=CreateNewTorrent;OpenTorrentFile;OpenTorrentAddress;
 [Desktop Action CreateNewTorrent]
 Name=Create New Torrent...
 Exec=webtorrent-desktop -n
-Path=/opt/webtorrent-desktop
 
 [Desktop Action OpenTorrentFile]
 Name=Open Torrent File...
 Exec=webtorrent-desktop -o
-Path=/opt/webtorrent-desktop
 
 [Desktop Action OpenTorrentAddress]
 Name=Open Torrent Address...
 Exec=webtorrent-desktop -u
-Path=/opt/webtorrent-desktop
