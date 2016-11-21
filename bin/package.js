@@ -168,7 +168,7 @@ const linux = {
   platform: 'linux',
 
   // Build ia32 and x64 binaries.
-  arch: 'all'
+  arch: 'x64'
 
   // Note: Application icon for Linux is specified via the BrowserWindow `icon` option.
 }
@@ -529,6 +529,9 @@ function buildLinux (cb) {
       if (argv.package === 'zip' || argv.package === 'all') {
         tasks.push((cb) => packageZip(filesPath, destArch, cb))
       }
+      if (argv.package === 'flatpak' || argv.package === 'all') {
+        tasks.push((cb) => packageFlatpak(filesPath, destArch, cb))
+      }
     })
     series(tasks, cb)
   })
@@ -564,6 +567,49 @@ function buildLinux (cb) {
     }], function (err) {
       if (err) return cb(err)
       console.log(`Linux: Created ${destArch} deb.`)
+      cb(null)
+    })
+  }
+
+  function packageFlatpak (filesPath, destArch, cb) {
+    // Create .zip file for Linux
+    console.log(`Linux: Creating ${destArch} flatpak...`)
+
+    var flatpakBundler = require('flatpak-bundler')
+
+    flatpakBundler.bundle({
+      id: 'io.webtorrent.Webtorrent',
+      base: 'io.atom.electron.BaseApp',
+      baseFlatpakref: 'https://s3-us-west-2.amazonaws.com/electron-flatpak.endlessm.com/electron-base-app-master.flatpakref',
+      runtime: 'org.freedesktop.Platform',
+      runtimeVersion: '1.4',
+      sdk: 'org.freedesktop.Sdk',
+      command: 'webtorrent-desktop',
+      files: [
+        [ path.join(config.STATIC_PATH, 'linux', 'share'), '/share' ],
+        [ filesPath, '/share/io.webtorrent.webtorrent' ]
+      ],
+      symlinks: [
+        [ '/share/io.webtorrent.webtorrent/WebTorrent', '/bin/webtorrent-desktop' ]
+      ],
+      finishArgs: [
+        '--share=ipc',
+        '--socket=x11',
+        '--socket=pulseaudio',
+        '--filesystem=home',
+        '--filesystem=/tmp',
+        '--share=network',
+        '--device=dri',
+        '--talk-name=org.freedesktop.Notifications'
+      ],
+      renameDesktopFile: 'webtorrent-desktop.desktop',
+      renameIcon: 'webtorrent-desktop'
+    }, {
+      arch: destArch,
+      bundlePath: path.join('dist', 'webtorrent-desktop' + '_' + destArch + '.flatpak')
+    }, function (err) {
+      if (err) return cb(err)
+      console.log(`Linux: Created ${destArch} flatpak.`)
       cb(null)
     })
   }
